@@ -12,6 +12,7 @@ import 'hardhat-deploy-ethers'
 import 'hardhat-contract-sizer'
 import '@nomiclabs/hardhat-ethers'
 import '@layerzerolabs/toolbox-hardhat'
+import '@nomicfoundation/hardhat-verify'
 
 import { HardhatUserConfig, HttpNetworkAccountsUserConfig } from 'hardhat/types'
 
@@ -73,6 +74,12 @@ const config: HardhatUserConfig = {
         deployer: {
             default: 0, // wallet address of index[0], of the mnemonic in .env
         },
+    },
+    etherscan: {
+        apiKey: process.env.BSCSCAN_API_KEY || '',
+    },
+    sourcify: {
+        enabled: false,
     },
 }
 
