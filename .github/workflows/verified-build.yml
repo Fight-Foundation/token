@@ -77,6 +77,12 @@ jobs:
           echo "On-chain program hash:"
           solana-verify get-program-hash -u "$EFFECTIVE_RPC" "$PROGRAM_ID"
 
+      - name: Checkout with token
+        uses: actions/checkout@v4
+        with:
+          repository: Fight-Foundation/token
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Local repo verification (compare on-chain vs repo@commit)
         run: |
           solana-verify verify-from-repo -u "$EFFECTIVE_RPC" \
