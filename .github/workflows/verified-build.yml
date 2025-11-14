@@ -1,0 +1,113 @@
+name: Verified Build (Solana)
+
+on:
+  workflow_dispatch:
+    inputs:
+      program_id:
+        description: "Program ID to verify"
+        required: true
+        default: "FXnms2y5FUjzxzEaDEnEF54pYWZLteTdKUwQhDbCAUfL"
+      repo_url:
+        description: "Public repo URL"
+        required: true
+        default: "https://github.com/Fight-Foundation/token"
+      lib_name:
+        description: "Program library name (Cargo [lib] name)"
+        required: true
+        default: "oft"
+      mount_path:
+        description: "Path (from repo root) containing program Cargo.toml"
+        required: true
+        default: "programs/oft"
+      commit_hash:
+        description: "Commit SHA to verify (defaults to dispatch SHA)"
+        required: false
+      uploader:
+        description: "Uploader pubkey (program authority or Squads vault)"
+        required: false
+      rpc_url:
+        description: "RPC URL (optional, uses secret SOLANA_RPC_URL if unset)"
+        required: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      PROGRAM_ID: ${{ inputs.program_id }}
+      REPO_URL: ${{ inputs.repo_url }}
+      LIB_NAME: ${{ inputs.lib_name }}
+      MOUNT_PATH: ${{ inputs.mount_path }}
+      COMMIT_HASH: ${{ inputs.commit_hash || github.sha }}
+      UPLOADER: ${{ inputs.uploader }}
+      RPC_INPUT: ${{ inputs.rpc_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust 1.84 (for CLI build)
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: 1.84.1
+          override: true
+
+      - name: Install solana-verify CLI
+        run: |
+          cargo install solana-verify --locked
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Docker info (for troubleshooting)
+        run: |
+          docker --version
+
+      - name: Compute effective RPC URL
+        run: |
+          echo "EFFECTIVE_RPC=${RPC_INPUT:-https://api.mainnet-beta.solana.com}" >> $GITHUB_ENV
+
+      - name: Deterministic build (solana-verify build)
+        run: |
+          solana-verify build --library-name "$LIB_NAME"
+
+      - name: Show hashes (local vs on-chain)
+        run: |
+          echo "Local executable hash:"
+          solana-verify get-executable-hash target/deploy/${LIB_NAME}.so
+          echo "On-chain program hash:"
+          solana-verify get-program-hash -u "$EFFECTIVE_RPC" "$PROGRAM_ID"
+
+      - name: Local repo verification (compare on-chain vs repo@commit)
+        run: |
+          solana-verify verify-from-repo -u "$EFFECTIVE_RPC" \
+            --program-id "$PROGRAM_ID" \
+            "$REPO_URL" \
+            --commit-hash "$COMMIT_HASH" \
+            --library-name "$LIB_NAME" \
+            --mount-path "$MOUNT_PATH"
+
+      - name: Export PDA transaction for Squads (if uploader provided)
+        if: env.UPLOADER != ''
+        run: |
+          mkdir -p .verified-build
+          solana-verify export-pda-tx "$REPO_URL" \
+            --program-id "$PROGRAM_ID" \
+            --uploader "$UPLOADER" \
+            --encoding base58 \
+            --compute-unit-price 0 \
+            --commit-hash "$COMMIT_HASH" \
+            --library-name "$LIB_NAME" \
+            --mount-path "$MOUNT_PATH" \
+            > .verified-build/pda_tx_base58.txt
+          head -c 160 .verified-build/pda_tx_base58.txt; echo
+
+      - name: Upload PDA transaction artifact
+        if: env.UPLOADER != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: pda-tx-base58
+          path: .verified-build/pda_tx_base58.txt
+
+      - name: Submit remote job (OtterSec API) [optional]
+        if: env.UPLOADER != ''
+        run: |
+          solana-verify remote submit-job \
+            --program-id "$PROGRAM_ID" \
+            --uploader "$UPLOADER"
