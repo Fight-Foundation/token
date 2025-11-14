@@ -44,6 +44,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install dependencies for hidapi
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config
+
       - name: Set up Rust 1.84 (for CLI build)
         uses: actions-rs/toolchain@v1
         with:

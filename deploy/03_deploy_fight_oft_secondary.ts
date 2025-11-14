@@ -13,13 +13,17 @@ const deployFunction: DeployFunction = async function (hre: HardhatRuntimeEnviro
     // BSC Mainnet LayerZero V2 endpoint
     const lzEndpoint = '0x1a44076050125825900e736c501f859c50fE728c'
     
+    // Use deployer as initial delegate for configuration, will transfer to multisig after wiring
+    const delegate = deployer
+    
     console.log('🌐 LayerZero Endpoint:', lzEndpoint)
+    console.log('👥 Delegate:', delegate)
     console.log('⚠️  NOTE: This version does NOT mint initial supply!')
     console.log('💡 Tokens will only exist when transferred from Solana')
     
     const result = await deploy('FightOFTSecondary', {
         from: deployer,
-        args: [lzEndpoint, deployer], // endpoint, delegate (no minting!)
+        args: [lzEndpoint, delegate], // endpoint, delegate (no minting!)
         log: true,
         waitConfirmations: 5,
         gasLimit: 3000000,

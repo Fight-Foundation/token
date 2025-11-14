@@ -117,6 +117,11 @@ interface CreateOFTTaskArgs {
      * The freeze authority address (only supported in onlyOftStore mode).
      */
     freezeAuthority?: string
+
+    /**
+     * The admin address for the OFT Store (defaults to deployer if not provided).
+     */
+    admin?: string
 }
 
 // Define a Hardhat task for creating OFT on Solana
@@ -157,6 +162,12 @@ task('lz:oft:solana:create', 'Mints new SPL Token and creates new OFT Store acco
         devtoolsTypes.string,
         true
     )
+    .addOptionalParam(
+        'admin',
+        'The admin address for the OFT Store (defaults to deployer)',
+        undefined,
+        devtoolsTypes.string
+    )
     .addParam('computeUnitPriceScaleFactor', 'The compute unit price scale factor', 4, devtoolsTypes.float, true)
     .setAction(
         async ({
@@ -175,6 +186,7 @@ task('lz:oft:solana:create', 'Mints new SPL Token and creates new OFT Store acco
             tokenProgram: tokenProgramStr,
             uri,
             freezeAuthority: freezeAuthorityStr,
+            admin: adminStr,
             computeUnitPriceScaleFactor,
         }: CreateOFTTaskArgs) => {
             const isMABA = !!mintStr // the difference between MABA and OFT Adapter is that MABA uses mint/burn mechanism whereas OFT Adapter uses lock/unlock mechanism
@@ -309,11 +321,14 @@ task('lz:oft:solana:create', 'Mints new SPL Token and creates new OFT Store acco
             }
 
             const lockboxSigner = createSignerFromKeypair({ eddsa: eddsa }, lockBox)
+            // Use provided admin or default to deployer
+            const adminPublicKey = adminStr ? publicKey(adminStr) : umiWalletKeyPair.publicKey
+            
             let txBuilder = transactionBuilder().add(
                 oft.initOft(
                     {
                         payer: umiWalletSigner,
-                        admin: umiWalletKeyPair.publicKey,
+                        admin: adminPublicKey,
                         mint: mint.publicKey,
                         escrow: lockboxSigner,
                     },
