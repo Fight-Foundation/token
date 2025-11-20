@@ -1,0 +1,70 @@
+🥊 FIGHT TOKEN - MULTISIG TRANSFER READY
+
+All scripts created and tested!
+
+═══════════════════════════════════════════════════════════════
+
+MULTISIG ADDRESSES:
+  ✓ Solana: GCQ8wGjU5TYmzC1YJckqgTGQLRjRxktB4rNuemPA9XWh
+  ✓ BSC:    0x1381c63F11Fe73998d80e2b42876C64362cF98Ab
+
+═══════════════════════════════════════════════════════════════
+
+CURRENT STATE (Before Transfer):
+
+BSC (0xB2D97C4ed2d0Ef452654F5CAB3da3735B5e6F3ab):
+  Owner: 0xd05eD14Ce1c8b34f256abF4225a9B977f5Bf4072
+
+Solana (FXnms2y5FUjzxzEaDEnEF54pYWZLteTdKUwQhDbCAUfL):
+  Upgrade Authority: B4Ef4SzvDH1ZsfaoDoGcC82xbosPpDAjvASqEjr4THxt
+  Admin: B4Ef4SzvDH1ZsfaoDoGcC82xbosPpDAjvASqEjr4THxt
+  Delegate: B4Ef4SzvDH1ZsfaoDoGcC82xbosPpDAjvASqEjr4THxt
+
+═══════════════════════════════════════════════════════════════
+
+WHAT GETS TRANSFERRED:
+
+BSC:
+  ✓ Contract Ownership → Multisig
+  ⚠ LayerZero Delegate (needs multisig action after)
+
+Solana:
+  ✓ Program Upgrade Authority → Multisig
+  ✓ OFT Admin → Multisig  
+  ✓ LayerZero Delegate → Multisig
+
+═══════════════════════════════════════════════════════════════
+
+🚀 READY TO EXECUTE:
+
+Option 1 - Complete Transfer (Recommended):
+  ./transfer-to-multisigs.sh
+
+Option 2 - BSC Only:
+  npx hardhat run scripts/transfer-bsc-to-multisig.js --network bsc-mainnet
+
+Option 3 - Solana Only:
+  ./transfer-solana-complete.sh
+
+═══════════════════════════════════════════════════════════════
+
+📋 PRE-FLIGHT CHECKLIST:
+
+  [ ] Multisig addresses double-checked
+  [ ] Private keys in .env are correct
+  [ ] BSC wallet has BNB for gas
+  [ ] Solana CLI configured
+  [ ] Team notified
+  [ ] Backup plan ready
+
+═══════════════════════════════════════════════════════════════
+
+Files Created:
+  ✓ ./transfer-to-multisigs.sh (main script)
+  ✓ ./transfer-solana-complete.sh (Solana all-in-one)
+  ✓ ./scripts/transfer-bsc-to-multisig.js
+  ✓ ./scripts/transfer-solana-admin.js
+  ✓ ./scripts/transfer-solana-upgrade-authority.sh
+  ✓ ./MULTISIG-TRANSFER.md (full docs)
+
+═══════════════════════════════════════════════════════════════

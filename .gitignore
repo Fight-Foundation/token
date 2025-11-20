@@ -26,3 +26,10 @@ pnpm-error.log
 .idea
 .gitsecret/keys/random_seed
 !*.secret
+
+# Build artifacts and cache
+docker-target/
+deployments/*/solcInputs/
+
+# Temporary log files
+wire-output.log
